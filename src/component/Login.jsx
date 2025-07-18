@@ -1,23 +1,31 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const Loginform = () => {
-  const [userName, setUserName] = useState("");
+const Login = () => {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://springboot-ems-backend-3.onrender.com/api/auth/login", {
-        username: userName,
-        password: password,
-      });
-      console.log("Token:", res.data.token);
-      alert("Login Successful");
-    } catch (e) {
-      console.error("Login Error", e);
-      alert("Invalid Credentials");
+      // Simple validation
+      if (!username || !password) {
+        alert("Please enter both username and password");
+        return;
+      }
+
+      // In a real app, you would verify credentials with backend
+      // For demo, we'll just store in localStorage
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("username", username);
+      
+      alert("Login successful!");
+      navigate("/employee");
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Login failed. Please try again.");
     }
   };
 
@@ -27,37 +35,35 @@ const Loginform = () => {
         <h2 className="text-center mb-4">Login</h2>
         <form onSubmit={handleLogin}>
           <div className="mb-3">
-            <label htmlFor="userName" className="form-label">Username</label>
+            <label htmlFor="username" className="form-label">Username</label>
             <input
-              id="userName"
               type="text"
               className="form-control"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
-
           <div className="mb-3">
             <label htmlFor="password" className="form-label">Password</label>
             <input
-              id="password"
               type="password"
               className="form-control"
+              id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
-
           <button type="submit" className="btn btn-primary w-100">Login</button>
         </form>
         <p className="mt-3 text-center">
-          Don&apos;t have an account? <Link to="/signup">Sign up</Link>
+          Don't have an account? <Link to="/signup">Sign up</Link>
         </p>
       </div>
     </div>
   );
 };
 
-export default Loginform;
+export default Login;

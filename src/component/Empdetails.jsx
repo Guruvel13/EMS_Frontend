@@ -1,41 +1,37 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Empdetails = () => {
   const [employees, setEmployees] = useState([]);
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if user is logged in
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/employee", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get("http://localhost:8080/employee");
         setEmployees(response.data);
       } catch (err) {
         console.error("Error fetching employees", err);
-        alert("Unauthorized or error fetching employee data.");
       }
     };
-
-    if (token) fetchEmployees();
-  }, [token]);
+    fetchEmployees();
+  }, [navigate]);
 
   const handleDelete = async (empId) => {
     try {
-      await axios.delete(`http://localhost:8080/employee/${empId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setEmployees((prev) => prev.filter((emp) => emp.empId !== empId));
+      await axios.delete(`http://localhost:8080/employee/${empId}`);
+      setEmployees(prev => prev.filter(emp => emp.empId !== empId));
       alert("Employee deleted successfully");
     } catch (err) {
       console.error("Error deleting employee", err);
-      alert("Delete failed. You might not have permission.");
     }
   };
 
@@ -48,26 +44,23 @@ const Empdetails = () => {
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
-            {role === "ROLE_ADMIN" && <th>Actions</th>}
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {employees.map((emp) => (
+          {employees.map(emp => (
             <tr key={emp.empId}>
               <td>{emp.empId}</td>
               <td>{emp.name}</td>
               <td>{emp.email}</td>
-              {role === "ROLE_ADMIN" && (
-                <td>
-                  <button
-                    onClick={() => handleDelete(emp.empId)}
-                    className="btn btn-danger btn-sm me-2"
-                  >
-                    Delete
-                  </button>
-                  <button className="btn btn-primary btn-sm">Edit</button>
-                </td>
-              )}
+              <td>
+                <button
+                  onClick={() => handleDelete(emp.empId)}
+                  className="btn btn-danger btn-sm me-2">
+                  Delete
+                </button>
+                <button className="btn btn-primary btn-sm">Edit</button>
+              </td>
             </tr>
           ))}
         </tbody>

@@ -1,27 +1,18 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-import EmployeeTaskActions from "./EmployeeTaskAction";
+import EmployeeTaskActions from "./EmployeeTaskActions";
+import { useNavigate } from "react-router-dom";
+
 const GetEmployee = () => {
   const [employees, setEmployees] = useState([]);
-  const [roles, setRoles] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-
-  const isAdmin =
-    roles.includes("admin") || roles.includes("ADMIN") || roles.includes("both");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const rolesFromStorage = JSON.parse(localStorage.getItem("roles") || "[]");
-        setRoles(rolesFromStorage);
-
-        const response = await axios.get("http://localhost:10000/employee", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get("http://localhost:10000/employee");
         setEmployees(response.data);
       } catch (error) {
         console.error("Error fetching employees", error);
@@ -40,15 +31,15 @@ const GetEmployee = () => {
     if (!email) return;
 
     try {
-      const token = localStorage.getItem("token");
+      if (!localStorage.getItem("isLoggedIn")) {
+        alert("Please login to edit employees");
+        navigate("/login");
+        return;
+      }
+
       await axios.put(
         `http://localhost:10000/employee/${empId}`,
-        { name, email },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { name, email }
       );
 
       setEmployees((prev) =>
@@ -56,7 +47,6 @@ const GetEmployee = () => {
           emp.empId === empId ? { ...emp, name, email } : emp
         )
       );
-
       alert("Employee updated.");
     } catch (error) {
       console.error("Update error", error);
@@ -69,13 +59,13 @@ const GetEmployee = () => {
     if (!confirmed) return;
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:10000/employee/${empId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      if (!localStorage.getItem("isLoggedIn")) {
+        alert("Please login to delete employees");
+        navigate("/login");
+        return;
+      }
 
+      await axios.delete(`http://localhost:10000/employee/${empId}`);
       setEmployees(employees.filter((emp) => emp.empId !== empId));
       alert("Employee deleted.");
     } catch (error) {
@@ -99,13 +89,13 @@ const GetEmployee = () => {
             <tr>
               <th>ID</th>
               <th>Name</th>
-              {isAdmin && <th>Actions</th>}
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {employees.length === 0 ? (
               <tr>
-                <td colSpan={isAdmin ? 3 : 2} className="text-center">
+                <td colSpan={3} className="text-center">
                   No employees found.
                 </td>
               </tr>
@@ -119,22 +109,20 @@ const GetEmployee = () => {
                   >
                     {employee.name}
                   </td>
-                  {isAdmin && (
-                    <td>
-                      <button
-                        className="btn btn-sm btn-warning me-2"
-                        onClick={() => handleEdit(employee.empId)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleDelete(employee.empId)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  )}
+                  <td>
+                    <button
+                      className="btn btn-sm btn-warning me-2"
+                      onClick={() => handleEdit(employee.empId)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleDelete(employee.empId)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
@@ -142,7 +130,6 @@ const GetEmployee = () => {
         </table>
       </div>
 
-      {/* Modal to show Add/List Tasks */}
       {selectedEmployee && (
         <EmployeeTaskActions
           selectedEmployee={selectedEmployee}

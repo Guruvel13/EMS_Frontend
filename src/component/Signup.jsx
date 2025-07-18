@@ -1,81 +1,100 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const Signupform = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const [rolenames, setRoleNames] = useState([]);
+const Signup = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    username: "",
+    password: ""
+  });
+  const navigate = useNavigate();
 
-  const handleCheckboxChange = (e) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setRoleNames((prev) => [...prev, value]);
-    } else {
-      setRoleNames((prev) => prev.filter((role) => role !== value));
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("https://springboot-ems-backend-3.onrender.com/api/auth/register", {
-        name,
-        email,
-        password,
-        username,
-        rolenames,
-      });
-      console.log("Signup Success", response.data);
-      alert("Signup Successful");
+      // Simple validation
+      if (!formData.name || !formData.email || !formData.username || !formData.password) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      // In a real app, you would send this to your backend
+      console.log("Signup data:", formData);
+      
+      // For demo, we'll just store in localStorage
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("username", formData.username);
+      
+      alert("Signup successful!");
+      navigate("/employee");
     } catch (error) {
-      console.error("Signup Failed", error);
-      alert("Signup Failed. Please try again.");
+      console.error("Signup error:", error);
+      alert("Signup failed. Please try again.");
     }
   };
 
   return (
     <div className="container d-flex justify-content-center align-items-center min-vh-100">
       <div className="card shadow p-4" style={{ maxWidth: "500px", width: "100%" }}>
-        <h2 className="text-center mb-4">Signup</h2>
+        <h2 className="text-center mb-4">Sign Up</h2>
         <form onSubmit={handleSignup}>
           <div className="mb-3">
-            <label htmlFor="name" className="form-label">Employee Name</label>
-            <input type="text" id="name" className="form-control" value={name} onChange={(e) => setName(e.target.value)} required />
+            <label htmlFor="name" className="form-label">Full Name</label>
+            <input
+              type="text"
+              className="form-control"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
           </div>
-
           <div className="mb-3">
             <label htmlFor="email" className="form-label">Email</label>
-            <input type="email" id="email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input
+              type="email"
+              className="form-control"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
           </div>
-
           <div className="mb-3">
             <label htmlFor="username" className="form-label">Username</label>
-            <input type="text" id="username" className="form-control" value={username} onChange={(e) => setUsername(e.target.value)} required />
+            <input
+              type="text"
+              className="form-control"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
           </div>
-
           <div className="mb-3">
             <label htmlFor="password" className="form-label">Password</label>
-            <input type="password" id="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <input
+              type="password"
+              className="form-control"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
           </div>
-
-          <fieldset className="mb-3 border p-3 rounded">
-            <legend className="fs-6">Select Roles</legend>
-            <div className="form-check">
-              <input className="form-check-input" type="checkbox" value="ROLE_ADMIN" id="adminRole" onChange={handleCheckboxChange} />
-              <label className="form-check-label" htmlFor="adminRole">Admin</label>
-            </div>
-            <div className="form-check">
-              <input className="form-check-input" type="checkbox" value="ROLE_USER" id="userRole" onChange={handleCheckboxChange} />
-              <label className="form-check-label" htmlFor="userRole">User</label>
-            </div>
-          </fieldset>
-
-          <button type="submit" className="btn btn-primary w-100">Signup</button>
+          <button type="submit" className="btn btn-primary w-100">Sign Up</button>
         </form>
-
         <p className="mt-3 text-center">
           Already have an account? <Link to="/login">Login</Link>
         </p>
@@ -84,4 +103,4 @@ const Signupform = () => {
   );
 };
 
-export default Signupform;
+export default Signup;

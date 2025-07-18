@@ -7,29 +7,18 @@ const AddEmployee = () => {
     name: "",
     email: "",
     password: "",
-    userName: "",
-    roleNames: [],
+    userName: ""
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "roleNames") {
-      const selected = Array.from(e.target.selectedOptions, (option) => option.value);
-      setForm({ ...form, [name]: selected });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
-      await axios.post("http://localhost:10000/employee", form,{
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+      await axios.post("http://localhost:8080/employee", form);
       alert("Employee Added Successfully!");
     } catch (error) {
       console.error("Error Adding Employee", error);
@@ -38,10 +27,8 @@ const AddEmployee = () => {
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center vh-100"
-      style={{ background: "linear-gradient(90deg, #74c0fc, #b197fc)" }}
-    >
+    <div className="d-flex justify-content-center align-items-center vh-100"
+      style={{ background: "linear-gradient(90deg, #74c0fc, #b197fc)" }}>
       <div className="bg-white p-4 rounded shadow" style={{ width: "400px" }}>
         <h2 className="text-center text-danger mb-4">Add Employee</h2>
         <form onSubmit={handleSubmit}>
@@ -83,24 +70,10 @@ const AddEmployee = () => {
             required
           />
 
-          <label>Role</label>
-          <select
-            name="roleNames"
-            className="form-select mb-3"
-            value={form.roleNames[0] || ""}
-            onChange={(e) => setForm({ ...form, roleNames: [e.target.value] })}
-          >
-            <option value="">Select Role</option>
-            <option value="admin">Admin</option>
-            <option value="user">User</option>
-            <option value="both">Both</option>
-          </select>
-
           <button
             type="submit"
             className="btn w-100 fw-bold text-white"
-            style={{ background: "linear-gradient(90deg, #74c0fc, #b197fc)" }}
-          >
+            style={{ background: "linear-gradient(90deg, #74c0fc, #b197fc)" }}>
             Add Employee
           </button>
         </form>
